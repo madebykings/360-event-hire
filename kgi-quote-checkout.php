@@ -166,8 +166,8 @@ class KGI_Quote_Checkout {
     }
 
     // Always enqueue on shortcode render (Elementor-safe)
-    wp_enqueue_style('kgi-quote-css', plugins_url('assets/quote.css', __FILE__), [], '1.1.8');
-    wp_enqueue_script('kgi-quote-js', plugins_url('assets/quote.js', __FILE__), ['jquery'], '1.1.8', true);
+    wp_enqueue_style('kgi-quote-css', plugins_url('assets/quote.css', __FILE__), [], '1.1.19');
+    wp_enqueue_script('kgi-quote-js', plugins_url('assets/quote.js', __FILE__), ['jquery'], '1.1.19', true);
 
     wp_localize_script('kgi-quote-js', 'KGI_QUOTE', [
       'ajax_url' => admin_url('admin-ajax.php'),
@@ -187,7 +187,6 @@ class KGI_Quote_Checkout {
       </div>
 
       <div class="kgi-actions-top">
-        <button type="button" class="kgi-btn" data-kgi-next-top>Next</button>
       </div>
 
       <div class="kgi-panels">
@@ -195,12 +194,16 @@ class KGI_Quote_Checkout {
         <div class="kgi-panel is-active" data-panel="1">
           <?php echo $this->render_items(); ?>
           <p class="kgi-hint">Hire prices cover you for up to 5 days of hire</p>
+          <div class="kgi-next">
           <button type="button" class="kgi-btn" data-kgi-next>Next step</button>
+          </div>
         </div>
 
         <div class="kgi-panel" data-panel="2">
           <?php echo $this->render_transport_and_event($data); ?>
+                    <div class="kgi-next">
           <button type="button" class="kgi-btn" data-kgi-save-transport>Next step</button>
+          </div>
         </div>
 
         <div class="kgi-panel" data-panel="3">
@@ -265,190 +268,257 @@ class KGI_Quote_Checkout {
     return ob_get_clean();
   }
 
-  private function render_transport_and_event($data) {
-    $t = $data['transport'] ?? [];
-    $e = $data['event'] ?? [];
+private function render_transport_and_event($data) {
 
-    $delivery_slots = [
-      'all_day_0800_1800' => 'All Day 08:00 – 18:00 (Best Price)',
-      'am_0800_1300'      => 'AM Slot 08:00 – 13:00',
-      'pm_1300_1800'      => 'PM Slot 13:00 – 18:00',
-      'premium_specific'  => 'Out of Hours/Specific Time Slot (Premium)',
-      'self_collect_free' => 'Free Self Collection 10:00 – 16:00 (Monday to Friday)',
-    ];
+  $t = $data['transport'] ?? [];
+  $e = $data['event'] ?? [];
 
-    $collection_slots = [
-      'all_day_0800_1800' => 'All Day 08:00 – 18:00 (Best Price)',
-      'am_0800_1300'      => 'AM Slot 08:00 – 13:00',
-      'pm_1300_1800'      => 'PM Slot 13:00 – 18:00',
-      'premium_specific'  => 'Out of Hours/Specific Time Slot (Premium)',
-      'self_return_free'  => 'Free Self Return 10:00 – 16:00 (Monday to Friday)',
-    ];
+  $delivery_slots = [
+    'all_day_0800_1800' => 'All Day 08:00 – 18:00 (Best Price)',
+    'am_0800_1300'      => 'AM Slot 08:00 – 13:00',
+    'pm_1300_1800'      => 'PM Slot 13:00 – 18:00',
+    'premium_specific'  => 'Out of Hours/Specific Time Slot (Premium)',
+    'self_collect_free' => 'Free Self Collection 10:00 – 16:00 (Monday to Friday)',
+  ];
 
-    $delivery_date     = $t['delivery_date'] ?? '';
-    $delivery_slot     = $t['delivery_slot'] ?? 'all_day_0800_1800';
-    $delivery_postcode = $t['delivery_postcode'] ?? '';
-    $delivery_address  = $t['delivery_address'] ?? '';
+  $collection_slots = [
+    'all_day_0800_1800' => 'All Day 08:00 – 18:00 (Best Price)',
+    'am_0800_1300'      => 'AM Slot 08:00 – 13:00',
+    'pm_1300_1800'      => 'PM Slot 13:00 – 18:00',
+    'premium_specific'  => 'Out of Hours/Specific Time Slot (Premium)',
+    'self_return_free'  => 'Free Self Return 10:00 – 16:00 (Monday to Friday)',
+  ];
 
-    $collection_date   = $t['collection_date'] ?? '';
-    $collection_slot   = $t['collection_slot'] ?? 'all_day_0800_1800';
+  $delivery_date     = $t['delivery_date'] ?? '';
+  $delivery_slot     = $t['delivery_slot'] ?? 'all_day_0800_1800';
+  $delivery_postcode = $t['delivery_postcode'] ?? '';
+  $delivery_address  = $t['delivery_address'] ?? '';
 
-    $event_start       = $e['start_datetime'] ?? '';
-    $event_finish      = $e['finish_datetime'] ?? '';
+  $collection_date   = $t['collection_date'] ?? '';
+  $collection_slot   = $t['collection_slot'] ?? 'all_day_0800_1800';
 
-    ob_start();
-    ?>
-    <h3>Delivery</h3>
+  $event_start       = $e['start_datetime'] ?? '';
+  $event_finish      = $e['finish_datetime'] ?? '';
 
-    <div class="kgi-row">
-      <label>Date</label>
-      <input type="date" data-kgi-field="transport.delivery_date" value="<?php echo esc_attr($delivery_date); ?>">
+  ob_start();
+  ?>
+
+  <div class="kgi-transport-grid">
+
+    <!-- Delivery -->
+    <div class="kgi-card">
+      <h2>Delivery</h2>
+
+      <div class="kgi-field">
+        <label>Date</label>
+        <div class="kgi-row">
+          <input type="date" data-kgi-field="transport.delivery_date" value="<?php echo esc_attr($delivery_date); ?>">
+        </div>
+      </div>
+
+      <div class="kgi-field">
+        <label>Timing</label>
+        <div class="kgi-row">
+          <select data-kgi-field="transport.delivery_slot">
+            <?php foreach ($delivery_slots as $val => $label): ?>
+              <option value="<?php echo esc_attr($val); ?>" <?php selected($delivery_slot, $val); ?>>
+                <?php echo esc_html($label); ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+      </div>
+
+      <div class="kgi-field">
+        <label>Postcode *</label>
+        <div class="kgi-row">
+          <input type="text" placeholder="Enter postcode" data-kgi-field="transport.delivery_postcode" value="<?php echo esc_attr($delivery_postcode); ?>">
+          <button type="button" class="kgi-btn kgi-btn-small" data-kgi-find="delivery">Find</button>
+        </div>
+      </div>
+
+      <div class="kgi-address-results" data-kgi-address-results="delivery" style="display:none;">
+        <label>Select address</label>
+        <select data-kgi-address-select="delivery"></select>
+      </div>
+
+      <div class="kgi-field">
+        <label>Delivery address *</label>
+        <div class="kgi-row">
+          <textarea placeholder="Use Find to search and select an address" data-kgi-field="transport.delivery_address"><?php echo esc_textarea($delivery_address); ?></textarea>
+        </div>
+        <p class="kgi-hint">Tip: Start with postcode, then select the address from the list.</p>
+      </div>
     </div>
 
-    <div class="kgi-row">
-      <label>Timing</label>
-      <select data-kgi-field="transport.delivery_slot">
-        <?php foreach ($delivery_slots as $val => $label): ?>
-          <option value="<?php echo esc_attr($val); ?>" <?php selected($delivery_slot, $val); ?>>
-            <?php echo esc_html($label); ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
+    <!-- Collection -->
+    <div class="kgi-card">
+      <h2>Collection / Return</h2>
+
+      <div class="kgi-field">
+        <label>Date</label>
+        <div class="kgi-row">
+          <input type="date" data-kgi-field="transport.collection_date" value="<?php echo esc_attr($collection_date); ?>">
+        </div>
+      </div>
+
+      <div class="kgi-field">
+        <label>Timing</label>
+        <div class="kgi-row">
+          <select data-kgi-field="transport.collection_slot">
+            <?php foreach ($collection_slots as $val => $label): ?>
+              <option value="<?php echo esc_attr($val); ?>" <?php selected($collection_slot, $val); ?>>
+                <?php echo esc_html($label); ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <p class="kgi-hint">Free self return/collection applies Monday to Friday only.</p>
+      </div>
     </div>
 
-    <div class="kgi-row">
-      <label>Postcode *</label>
-      <input type="text" data-kgi-field="transport.delivery_postcode" value="<?php echo esc_attr($delivery_postcode); ?>">
-      <button type="button" class="kgi-btn kgi-btn-small" data-kgi-find="delivery">Find</button>
+  </div><!-- /.kgi-transport-grid -->
+
+  <!-- Event bar -->
+  <div class="kgi-card" style="margin-top:22px;">
+    <h2>Event</h2>
+
+    <div class="kgi-transport-grid" style="grid-template-columns:1fr 1fr; gap:20px;">
+      <div class="kgi-field">
+        <label>Event Start Date &amp; Time *</label>
+        <div class="kgi-row">
+          <input type="datetime-local" data-kgi-field="event.start_datetime" value="<?php echo esc_attr($event_start); ?>">
+        </div>
+      </div>
+
+      <div class="kgi-field">
+        <label>Event Finish Date &amp; Time *</label>
+        <div class="kgi-row">
+          <input type="datetime-local" data-kgi-field="event.finish_datetime" value="<?php echo esc_attr($event_finish); ?>">
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div class="kgi-address-results" data-kgi-address-results="delivery" style="display:none;">
-      <label>Select address</label>
-      <select data-kgi-address-select="delivery"></select>
-    </div>
+  <?php
+  return ob_get_clean();
+}
 
-    <div class="kgi-row">
-      <label>Delivery address *</label>
-      <textarea data-kgi-field="transport.delivery_address"><?php echo esc_textarea($delivery_address); ?></textarea>
-      <p class="kgi-hint">Tip: Start with postcode, then select the address from the list.</p>
-    </div>
+private function render_details($data) {
 
-    <h3>Collection / Return</h3>
+  $d = $data['details'] ?? [];
 
-    <div class="kgi-row">
-      <label>Date</label>
-      <input type="date" data-kgi-field="transport.collection_date" value="<?php echo esc_attr($collection_date); ?>">
-    </div>
+  $first_name = $d['first_name'] ?? '';
+  $last_name  = $d['last_name'] ?? '';
+  $email      = $d['email'] ?? '';
+  $phone      = $d['phone'] ?? '';
+  $event_name = $d['event_name'] ?? '';
+  $company    = $d['company'] ?? '';
 
-    <div class="kgi-row">
-      <label>Timing</label>
-      <select data-kgi-field="transport.collection_slot">
-        <?php foreach ($collection_slots as $val => $label): ?>
-          <option value="<?php echo esc_attr($val); ?>" <?php selected($collection_slot, $val); ?>>
-            <?php echo esc_html($label); ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-      <p class="kgi-hint">Free self return/collection applies Monday to Friday only.</p>
-    </div>
+  $billing_different = !empty($d['billing_different']) ? '1' : '';
+  $billing_postcode  = $d['billing_postcode'] ?? '';
+  $billing_address   = $d['billing_address'] ?? '';
 
-    <h3>Event</h3>
+  $comments          = $d['comments'] ?? '';
 
-    <div class="kgi-row">
-      <label>Event Start Date & Time *</label>
-      <input type="datetime-local" data-kgi-field="event.start_datetime" value="<?php echo esc_attr($event_start); ?>">
-    </div>
+  ob_start();
+  ?>
 
-    <div class="kgi-row">
-      <label>Event Finish Date & Time *</label>
-      <input type="datetime-local" data-kgi-field="event.finish_datetime" value="<?php echo esc_attr($event_finish); ?>">
-    </div>
-    <?php
-    return ob_get_clean();
-  }
+  <div class="kgi-details-grid">
 
-  private function render_details($data) {
-    $d = $data['details'] ?? [];
+    <!-- Left: form card -->
+    <div class="kgi-card">
+      <h2>Details</h2>
 
-    $first_name = $d['first_name'] ?? '';
-    $last_name  = $d['last_name'] ?? '';
-    $email      = $d['email'] ?? '';
-    $phone      = $d['phone'] ?? '';
-    $event_name = $d['event_name'] ?? '';
-    $company    = $d['company'] ?? '';
+      <div class="kgi-field">
+        <label>First Name *</label>
+        <div class="kgi-row">
+          <input type="text" placeholder="First Name" data-kgi-field="details.first_name" value="<?php echo esc_attr($first_name); ?>">
+        </div>
+      </div>
 
-    $billing_different = !empty($d['billing_different']) ? '1' : '';
-    $billing_postcode  = $d['billing_postcode'] ?? '';
-    $billing_address   = $d['billing_address'] ?? '';
+      <div class="kgi-field">
+        <label>Last Name *</label>
+        <div class="kgi-row">
+          <input type="text" placeholder="Last Name" data-kgi-field="details.last_name" value="<?php echo esc_attr($last_name); ?>">
+        </div>
+      </div>
 
-    $comments          = $d['comments'] ?? '';
+      <div class="kgi-field">
+        <label>Email address *</label>
+        <div class="kgi-row">
+          <input type="email" placeholder="Email Address" data-kgi-field="details.email" value="<?php echo esc_attr($email); ?>">
+        </div>
+      </div>
 
-    ob_start();
-    ?>
-    <h2>Details</h2>
+      <div class="kgi-field">
+        <label>Phone *</label>
+        <div class="kgi-row">
+          <input type="text" placeholder="Telephone Number" data-kgi-field="details.phone" value="<?php echo esc_attr($phone); ?>">
+        </div>
+      </div>
 
-    <div class="kgi-row">
-      <label>First Name *</label>
-      <input type="text" data-kgi-field="details.first_name" value="<?php echo esc_attr($first_name); ?>">
-    </div>
+      <div class="kgi-field">
+        <label>Unique Event Name *</label>
+        <div class="kgi-row">
+          <input type="text" placeholder="e.g. Smith Wedding / Company Awards Night" data-kgi-field="details.event_name" value="<?php echo esc_attr($event_name); ?>">
+        </div>
+      </div>
 
-    <div class="kgi-row">
-      <label>Last Name *</label>
-      <input type="text" data-kgi-field="details.last_name" value="<?php echo esc_attr($last_name); ?>">
-    </div>
+      <div class="kgi-field">
+        <label>Company</label>
+        <div class="kgi-row">
+          <input type="text" placeholder="Company" data-kgi-field="details.company" value="<?php echo esc_attr($company); ?>">
+        </div>
+      </div>
 
-    <div class="kgi-row">
-      <label>Email *</label>
-      <input type="email" data-kgi-field="details.email" value="<?php echo esc_attr($email); ?>">
-    </div>
-
-    <div class="kgi-row">
-      <label>Phone *</label>
-      <input type="text" data-kgi-field="details.phone" value="<?php echo esc_attr($phone); ?>">
-    </div>
-
-    <div class="kgi-row">
-      <label>Unique Event Name *</label>
-      <input type="text" data-kgi-field="details.event_name" value="<?php echo esc_attr($event_name); ?>">
-    </div>
-
-    <div class="kgi-row">
-      <label>Company</label>
-      <input type="text" data-kgi-field="details.company" value="<?php echo esc_attr($company); ?>">
-    </div>
-
-    <div class="kgi-row kgi-row-inline">
-      <label>
+      <div class="kgi-check">
         <input type="checkbox" data-kgi-field="details.billing_different" value="1" <?php checked($billing_different, '1'); ?>>
-        Is the billing address different from the delivery address?
-      </label>
-    </div>
-
-    <div data-kgi-conditional="details.billing_different" data-show-when="1" style="display:none;">
-      <div class="kgi-row">
-        <label>Billing postcode</label>
-        <input type="text" data-kgi-field="details.billing_postcode" value="<?php echo esc_attr($billing_postcode); ?>">
-        <button type="button" class="kgi-btn kgi-btn-small" data-kgi-find="billing">Find</button>
+        <label style="margin:0;">Is the billing address different from the delivery address?</label>
       </div>
 
-      <div class="kgi-address-results" data-kgi-address-results="billing" style="display:none;">
-        <label>Select billing address</label>
-        <select data-kgi-address-select="billing"></select>
+      <div data-kgi-conditional="details.billing_different" data-show-when="1" style="display:none; margin-top:10px;">
+        <div class="kgi-field">
+          <label>Billing postcode</label>
+          <div class="kgi-row">
+            <input type="text" placeholder="Enter postcode" data-kgi-field="details.billing_postcode" value="<?php echo esc_attr($billing_postcode); ?>">
+            <button type="button" class="kgi-btn kgi-btn-small" data-kgi-find="billing">Find</button>
+          </div>
+        </div>
+
+        <div class="kgi-address-results" data-kgi-address-results="billing" style="display:none;">
+          <label>Select billing address</label>
+          <select data-kgi-address-select="billing"></select>
+        </div>
+
+        <div class="kgi-field">
+          <label>Billing address</label>
+          <div class="kgi-row">
+            <textarea placeholder="Billing address" data-kgi-field="details.billing_address"><?php echo esc_textarea($billing_address); ?></textarea>
+          </div>
+        </div>
       </div>
 
-      <div class="kgi-row">
-        <label>Billing address</label>
-        <textarea data-kgi-field="details.billing_address"><?php echo esc_textarea($billing_address); ?></textarea>
+      <div class="kgi-field">
+        <label>Is there anything else you want us to know?</label>
+        <div class="kgi-row">
+          <textarea placeholder="Optional notes" data-kgi-field="details.comments"><?php echo esc_textarea($comments); ?></textarea>
+        </div>
       </div>
+
+      <div class="kgi-error" data-kgi-error style="display:none;"></div>
     </div>
 
-    <div class="kgi-row">
-      <label>Is there anything else you want us to know?</label>
-      <textarea data-kgi-field="details.comments"><?php echo esc_textarea($comments); ?></textarea>
-    </div>
-    <?php
-    return ob_get_clean();
-  }
+    <!-- Right: image card -->
+    <div class="kgi-card kgi-card-image" aria-hidden="true"></div>
+
+  </div><!-- /.kgi-details-grid -->
+
+  <?php
+  return ob_get_clean();
+}
+
+ 
 
   // ----------------------------
   // Cart AJAX
@@ -493,86 +563,91 @@ class KGI_Quote_Checkout {
   // ----------------------------
   // AJAX: GetAddress lookup
   // ----------------------------
-  public function ajax_lookup_postcode() {
-    $this->assert_ajax_nonce();
+  
+public function ajax_lookup_postcode() {
+  $this->assert_ajax_nonce();
 
-    $api_key = trim((string)get_option(self::OPTION_GETADDRESS_KEY, ''));
-    if (!$api_key) {
-      wp_send_json_error(['message' => 'Address lookup not configured (missing GetAddress.io API key).'], 400);
-    }
-
-    $postcode_raw = (string)($_POST['postcode'] ?? '');
-    $postcode = $this->clean_postcode($postcode_raw);
-    if (!$postcode) {
-      wp_send_json_error(['message' => 'Please enter a postcode.'], 422);
-    }
-
-    // ✅ expand=true returns structured address objects (line_1, town_or_city, county, etc.)
-    $url = 'https://api.getaddress.io/find/' . rawurlencode($postcode) . '?api-key=' . rawurlencode($api_key) . '&expand=true';
-
-    $resp = wp_remote_get($url, [
-      'timeout' => 15,
-      'headers' => ['Accept' => 'application/json'],
-    ]);
-
-    if (is_wp_error($resp)) {
-      wp_send_json_error(['message' => 'Lookup failed: ' . $resp->get_error_message()], 500);
-    }
-
-    $code = (int) wp_remote_retrieve_response_code($resp);
-    $body = (string) wp_remote_retrieve_body($resp);
-
-    if ($code !== 200) {
-      $maybe = json_decode($body, true);
-      $msg = is_array($maybe) && !empty($maybe['Message'])
-        ? (string)$maybe['Message']
-        : 'Lookup failed. Please check the postcode and try again.';
-      wp_send_json_error(['message' => $msg], 400);
-    }
-
-    $json = json_decode($body, true);
-    if (!is_array($json)) {
-      wp_send_json_error(['message' => 'Lookup returned an invalid response.'], 500);
-    }
-
-    $addresses = $json['addresses'] ?? [];
-    if (!is_array($addresses) || empty($addresses)) {
-      wp_send_json_error(['message' => 'No addresses found for this postcode.'], 404);
-    }
-
-    // ✅ Normalise to an array of readable one-line strings (what your JS expects)
-    $formatted = [];
-    foreach ($addresses as $addr) {
-
-      // expand=true => each item is an associative array
-      if (is_array($addr)) {
-        $parts = [];
-        foreach (['line_1','line_2','line_3','line_4','town_or_city','county'] as $k) {
-          if (!empty($addr[$k])) $parts[] = trim((string)$addr[$k]);
-        }
-        $pretty = implode(', ', array_filter($parts));
-        $pretty = rtrim($pretty, ', ');
-
-        $pretty = ($pretty !== '')
-          ? ($pretty . ', ' . trim($postcode_raw))
-          : trim($postcode_raw);
-
-        $formatted[] = $pretty;
-        continue;
-      }
-
-      // Non-expanded => CSV-like string
-      $addr = (string)$addr;
-      $pretty = trim(preg_replace('/\s*,\s*/', ', ', $addr));
-      $pretty = rtrim($pretty, ', ') . ', ' . trim($postcode_raw);
-      $formatted[] = $pretty;
-    }
-
-    wp_send_json_success([
-      'postcode'  => trim($postcode_raw),
-      'addresses' => $formatted,
-    ]);
+  $api_key = trim((string) get_option(self::OPTION_GETADDRESS_KEY, ''));
+  if (!$api_key) {
+    wp_send_json_error(['message' => 'Address lookup not configured (missing GetAddress.io API key).'], 400);
   }
+
+  $postcode_raw   = (string)($_POST['postcode'] ?? '');
+  $postcode_clean = $this->clean_postcode($postcode_raw);
+  if (!$postcode_clean) {
+    wp_send_json_error(['message' => 'Please enter a postcode.'], 422);
+  }
+
+  // ✅ Use Autocomplete for postcode lookups (works even when /find/ is not available)
+  // Docs: /autocomplete/{term} and "all=true returns all suggestions when term contains a postcode"
+  $url =
+    'https://api.getaddress.io/autocomplete/' . rawurlencode($postcode_clean) .
+    '?api-key=' . rawurlencode($api_key) .
+    '&all=true&show-postcode=true';
+
+  $resp = wp_remote_get($url, [
+    'timeout' => 20,
+    'headers' => [
+      'Accept'     => 'application/json',
+      'User-Agent' => 'KGI-Quote-Checkout',
+    ],
+  ]);
+
+  if (is_wp_error($resp)) {
+    wp_send_json_error(['message' => 'Lookup failed: ' . $resp->get_error_message()], 500);
+  }
+
+  $http = (int) wp_remote_retrieve_response_code($resp);
+  $body = (string) wp_remote_retrieve_body($resp);
+  $json = json_decode($body, true);
+
+  if ($http !== 200 || !is_array($json)) {
+    $msg = (is_array($json) && !empty($json['Message'])) ? (string)$json['Message'] : 'Lookup failed.';
+    $out = ['message' => $msg . " (HTTP {$http})"];
+
+    if (current_user_can('manage_woocommerce')) {
+      $out['debug'] = [
+        'url'  => preg_replace('/api-key=[^&]+/', 'api-key=***', $url),
+        'body' => substr($body, 0, 500),
+      ];
+    }
+
+    wp_send_json_error($out, 400);
+  }
+
+  $suggestions = $json['suggestions'] ?? null;
+  if (!is_array($suggestions) || empty($suggestions)) {
+    $out = ['message' => 'No addresses found for this postcode.'];
+    if (current_user_can('manage_woocommerce')) {
+      $out['debug'] = [
+        'url'  => preg_replace('/api-key=[^&]+/', 'api-key=***', $url),
+        'body' => substr($body, 0, 500),
+      ];
+    }
+    wp_send_json_error($out, 404);
+  }
+
+  // Turn suggestions into dropdown strings
+  $addresses = [];
+  foreach ($suggestions as $s) {
+    if (!is_array($s) || empty($s['address'])) continue;
+    $addr = trim((string)$s['address']);
+    if ($addr !== '') $addresses[] = $addr;
+  }
+
+  $addresses = array_values(array_unique($addresses));
+
+  if (!$addresses) {
+    wp_send_json_error(['message' => 'No addresses found for this postcode.'], 404);
+  }
+
+  wp_send_json_success([
+    'postcode'  => trim($postcode_raw),
+    'addresses' => $addresses,
+  ]);
+}
+
+
 
   // ----------------------------
   // Save step + Submit quote
@@ -851,7 +926,7 @@ class KGI_Quote_Checkout {
   }
 
   private function get_disclaimer_text() {
-    return '<p><strong>Disclaimer:</strong> This is a quote request only. Your booking is not confirmed until payment is received.</p>';
+    return '<p><strong>Disclaimer:</strong> No stock has been booked at this stage. Only once a quote is accepted and payment made is the booking confirmed. All hires are quoted on a dry hire basis and no set up is included unless specifically listed in the quote. We have 4 delivery and collection timings available, please make sure you have selected the most appropriate one, advising us of any alterations, restrictions or handling that is required. At the time of quoting all items listed are available to hire. We work on a first come first served basis and in order to avoid disappointment, we strongly advise that you confirm your requirements and pay a deposit to secure your hire as soon as possible. Minimum order values apply. Price excludes VAT. Please check our website FAQ’s for more information.</p>';
   }
 }
 
