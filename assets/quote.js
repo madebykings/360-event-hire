@@ -1,16 +1,15 @@
 /**
- * KGI Quote Checkout - Full JS
+ * KGI Quote Checkout - Full JS (fixed)
  * - Stepper navigation (click step numbers to go back)
  * - Conditional fields (billing address block)
  * - Save Transport step (AJAX)
  * - Submit Quote (AJAX -> creates Woo order)
  * - Cart qty + remove via AJAX endpoints
- * - GetAddress.io lookup via server-side WP AJAX
+ * - GetAddress.io lookup via server-side WP AJAX (kgi_quote_lookup_postcode)
  *
  * Requires localized global:
- *   KGI_QUOTE = { ajax_url: ".../admin-ajax.php", nonce: "..." }
+ * KGI_QUOTE = { ajax_url: ".../admin-ajax.php", nonce: "..." }
  */
-
 (function ($) {
   "use strict";
 
@@ -48,10 +47,9 @@
     $wrap.find("[data-kgi-conditional]").each(function () {
       var target = $(this).data("kgi-conditional"); // e.g. details.billing_different
       var showWhen = String($(this).data("show-when"));
-
       var $field = $wrap.find('[data-kgi-field="' + target + '"]');
-      var current = "";
 
+      var current = "";
       if ($field.length) {
         if ($field[0].type === "checkbox") current = $field[0].checked ? "1" : "";
         else current = String($field.val());
@@ -61,21 +59,9 @@
     });
   }
 
-  function kgiAjax(action, data) {
-  const fd = new FormData();
-  fd.append("action", action);
-  fd.append("nonce", (window.KGI_QUOTE && KGI_QUOTE.nonce) ? KGI_QUOTE.nonce : "");
-  Object.keys(data || {}).forEach(k => fd.append(k, data[k]));
-  return fetch((window.KGI_QUOTE && KGI_QUOTE.ajax_url) ? KGI_QUOTE.ajax_url : "/wp-admin/admin-ajax.php", {
-    method: "POST",
-    body: fd,
-    credentials: "same-origin"
-  }).then(r => r.json());
-}
-
-
   function getPayload($wrap) {
     var payload = {};
+
     $wrap.find("[data-kgi-field]").each(function () {
       var key = $(this).data("kgi-field"); // transport.delivery_date
       if (!key) return;
@@ -85,17 +71,16 @@
 
       var root = parts[0];
       var field = parts[1];
+
       if (!payload[root]) payload[root] = {};
 
       var val;
-      if (this.type === "checkbox") {
-        val = this.checked ? "1" : "";
-      } else {
-        val = $(this).val();
-      }
+      if (this.type === "checkbox") val = this.checked ? "1" : "";
+      else val = $(this).val();
 
       payload[root][field] = val;
     });
+
     return payload;
   }
 
@@ -113,6 +98,7 @@
   function cartUpdate(cartKey, qty) {
     return ajaxPost("kgi_quote_cart_update", { cart_key: cartKey, qty: qty });
   }
+
   function cartRemove(cartKey) {
     return ajaxPost("kgi_quote_cart_remove", { cart_key: cartKey });
   }
@@ -123,6 +109,7 @@
   function saveStep(payload) {
     return ajaxPost("kgi_quote_save_step", { payload: JSON.stringify(payload) });
   }
+
   function submitQuote(payload) {
     return ajaxPost("kgi_quote_submit", { payload: JSON.stringify(payload) });
   }
@@ -134,11 +121,25 @@
     return ajaxPost("kgi_quote_lookup_postcode", { postcode: postcode });
   }
 
+  function toMultilineAddress(oneLine) {
+    // Convert "A, B, C, POSTCODE" into multiline
+    return String(oneLine || "")
+      .split(",")
+      .map(function (s) {
+        return s.trim();
+      })
+      .filter(Boolean)
+      .join("\n");
+  }
+
   function renderAddressOptions($select, addresses) {
     $select.empty();
-    $select.append($("<option>").val("").text("Select an address..."));
-    addresses.forEach(function (addr) {
-      $select.append($("<option>").val(addr).text(addr));
+
+    // ✅ FIX: must be <option>, not $("")
+    $select.append($("<option></option>").val("").text("Select an address..."));
+
+    (addresses || []).forEach(function (addr) {
+      $select.append($("<option></option>").val(addr).text(addr));
     });
   }
 
@@ -150,11 +151,12 @@
 
       var postcodeField =
         which === "delivery"
-          ? 'transport.delivery_postcode'
-          : 'details.billing_postcode';
+          ? "transport.delivery_postcode"
+          : "details.billing_postcode";
 
       var $pc = $wrap.find('[data-kgi-field="' + postcodeField + '"]');
       var postcode = ($pc.val() || "").trim();
+
       if (!postcode) {
         alert("Please enter a postcode.");
         return;
@@ -163,23 +165,28 @@
       var $results = $wrap.find('[data-kgi-address-results="' + which + '"]');
       var $select = $wrap.find('[data-kgi-address-select="' + which + '"]');
 
-      // Disable button while loading
       var $btn = $(this);
       $btn.prop("disabled", true);
 
       lookupPostcode(postcode)
         .done(function (res) {
+          // WP JSON format: { success: true, data: { addresses: [...] } }
           var addresses = res && res.data && res.data.addresses ? res.data.addresses : [];
+
           if (!addresses.length) {
             alert("No addresses found for that postcode.");
+            $results.hide();
             return;
           }
+
           renderAddressOptions($select, addresses);
           $results.show();
         })
         .fail(function (xhr) {
           var msg =
-            (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) ||
+            (xhr.responseJSON &&
+              xhr.responseJSON.data &&
+              xhr.responseJSON.data.message) ||
             "Address lookup failed.";
           alert(msg);
         })
@@ -194,21 +201,15 @@
       var which = $(this).data("kgi-address-select"); // "delivery" or "billing"
       var val = $(this).val() || "";
 
-      function toMultilineAddress(oneLine) {
-  // Convert "A, B, C, POSTCODE" into multiline, remove duplicate spaces
-  return String(oneLine || "")
-    .split(",")
-    .map(function (s) { return s.trim(); })
-    .filter(Boolean)
-    .join("\n");
-}
-
-if (which === "delivery") {
-  $wrap.find('[data-kgi-field="transport.delivery_address"]').val(toMultilineAddress(val));
-} else if (which === "billing") {
-  $wrap.find('[data-kgi-field="details.billing_address"]').val(toMultilineAddress(val));
-}
-
+      if (which === "delivery") {
+        $wrap
+          .find('[data-kgi-field="transport.delivery_address"]')
+          .val(toMultilineAddress(val));
+      } else if (which === "billing") {
+        $wrap
+          .find('[data-kgi-field="details.billing_address"]')
+          .val(toMultilineAddress(val));
+      }
     });
   }
 
@@ -258,7 +259,9 @@ if (which === "delivery") {
         })
         .fail(function (xhr) {
           var msg =
-            (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) ||
+            (xhr.responseJSON &&
+              xhr.responseJSON.data &&
+              xhr.responseJSON.data.message) ||
             "Could not save transport step.";
           alert(msg);
         })
@@ -285,7 +288,9 @@ if (which === "delivery") {
         })
         .fail(function (xhr) {
           var msg =
-            (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) ||
+            (xhr.responseJSON &&
+              xhr.responseJSON.data &&
+              xhr.responseJSON.data.message) ||
             "Please check the form and try again.";
           $wrap.find("[data-kgi-error]").show().text(msg);
           setStep($wrap, 3);
@@ -338,70 +343,6 @@ if (which === "delivery") {
       });
     });
   }
-
-  document.addEventListener("click", async function(e){
-  const btn = e.target.closest("[data-kgi-find-postcode]");
-  if (!btn) return;
-
-  const wrap = btn.closest("[data-kgi-quote]");
-  const postcodeEl = wrap.querySelector('[data-kgi-field="transport.postcode"]');
-  const postcode = (postcodeEl?.value || "").trim();
-
-  if (!postcode) {
-    alert("Please enter a postcode");
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Finding…";
-
-  try {
-    const res = await kgiAjax("kgi_getaddress_lookup", { postcode });
-
-    if (!res || !res.success) {
-      console.warn("Lookup failed", res);
-      alert((res && res.data && res.data.message) ? res.data.message : "Address lookup failed");
-      return;
-    }
-
-    const addresses = res.data.addresses || [];
-    if (!addresses.length) {
-      alert("No addresses found for that postcode");
-      return;
-    }
-
-    // Build a select list
-    let holder = wrap.querySelector("[data-kgi-address-results='delivery']");
-    if (!holder) {
-      holder = document.createElement("div");
-      holder.className = "kgi-address-results";
-      holder.setAttribute("data-kgi-address-results", "delivery");
-      btn.closest(".kgi-row")?.after(holder);
-    }
-
-    holder.innerHTML = `
-      <label>Select address</label>
-      <select data-kgi-address-select="delivery">
-        <option value="">Select an address…</option>
-        ${addresses.map(a => `<option value="${encodeURIComponent(a.multi)}">${a.label}</option>`).join("")}
-      </select>
-    `;
-
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Find";
-  }
-});
-
-document.addEventListener("change", function(e){
-  const sel = e.target.closest('select[data-kgi-address-select="delivery"]');
-  if (!sel) return;
-
-  const wrap = sel.closest("[data-kgi-quote]");
-  const target = wrap.querySelector('[data-kgi-field="transport.delivery_address"]');
-  const val = sel.value ? decodeURIComponent(sel.value) : "";
-  if (target) target.value = val;
-});
 
   // ----------------------------
   // Init
