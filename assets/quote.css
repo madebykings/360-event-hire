@@ -1,47 +1,450 @@
-.kgi-quote-wrap{max-width:1200px;margin:0 auto}
-.kgi-quote-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
-.kgi-quote-stepper{display:flex;align-items:center;gap:10px;flex:1}
-.kgi-step{display:flex;align-items:center;gap:8px;opacity:.5}
-.kgi-step.is-active,.kgi-step.is-done{opacity:1}
-.kgi-badge{width:26px;height:26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #2ecc71;font-weight:700;font-size:13px}
-.kgi-step.is-active .kgi-badge{background:#2ecc71;color:#fff}
-.kgi-step.is-done .kgi-badge{background:#2ecc71;color:#fff}
-.kgi-line{height:2px;background:#d9d9d9;flex:1;min-width:30px}
-.kgi-cta,.kgi-pill{background:#b10063;color:#fff;border:0;border-radius:999px;padding:14px 22px;font-weight:700;cursor:pointer}
-.kgi-pill{padding:10px 18px}
-.kgi-pill-ghost{background:#fff;color:#b10063;border:2px solid #b10063}
-.kgi-panel{display:none}
-.kgi-panel.is-active{display:block}
-.kgi-card{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.1);padding:22px}
-.kgi-items .kgi-item{display:grid;grid-template-columns:120px 1fr 120px;gap:16px;align-items:center;background:#fff;border-radius:16px;box-shadow:0 8px 20px rgba(0,0,0,.08);padding:14px;margin-bottom:12px}
-.kgi-item-img img{width:100%;height:auto;display:block;border-radius:12px}
-.kgi-item-title{font-weight:700;margin-bottom:6px}
-.kgi-item-unit{opacity:.7;margin-bottom:10px}
-.kgi-item-controls{display:flex;align-items:center;gap:14px}
-.kgi-qty{display:flex;align-items:center;gap:8px}
-.kgi-qty-btn{width:36px;height:36px;border-radius:999px;border:1px solid #ddd;background:#fff;cursor:pointer;font-weight:700}
-.kgi-qty-input{width:64px;text-align:center;border:1px solid #ddd;border-radius:999px;padding:8px}
-.kgi-link{background:transparent;border:0;color:#333;text-decoration:underline;cursor:pointer}
-.kgi-item-total{text-align:right;font-weight:800}
-.kgi-items-footer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px;gap:16px}
-.kgi-items-subnote{opacity:.75;font-size:14px}
-.kgi-note{margin:16px 0;text-align:center;opacity:.8}
-.kgi-transport-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.kgi-details-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
-.kgi-card-image{min-height:420px;background:#eee url('') center/cover no-repeat}
-.kgi-row{display:flex;gap:10px;align-items:center}
-.kgi-field{margin-bottom:12px}
-.kgi-card label{display:block;font-size:13px;opacity:.75;margin:10px 0 6px}
-.kgi-card input,.kgi-card select,.kgi-card textarea{width:100%;border:1px solid #ddd;border-radius:999px;padding:12px 14px;outline:none}
-.kgi-card textarea{border-radius:14px}
-.kgi-check{display:flex;gap:10px;align-items:flex-start;margin-top:10px}
-.kgi-check input{width:18px;height:18px;margin-top:2px}
-.kgi-footnote{text-align:center;opacity:.8;margin:18px 0}
-.kgi-disclaimer{margin-top:14px;background:#fff7cc;border-radius:14px;padding:14px;line-height:1.35}
-.kgi-submitted{text-align:center;padding:30px 10px}
-.kgi-error{margin-top:10px;background:#ffe3e3;border-radius:12px;padding:10px}
-@media (max-width: 900px){
-  .kgi-transport-grid,.kgi-details-grid{grid-template-columns:1fr}
-  .kgi-items .kgi-item{grid-template-columns:90px 1fr}
-  .kgi-item-total{grid-column:1 / -1;text-align:left}
+/* ============================
+   KGI Quote Checkout – FULL CSS (FIXED)
+   - Stepper is always 100% wide, equal steps, no jumping
+   - Quantity +/- buttons forced to proper style (theme-proof)
+   ============================ */
+
+/* ==== HARD STRETCH OVERRIDES (Elementor/theme-proof) ==== */
+
+/* Make shortcode wrappers full width (Elementor often uses inline/auto) */
+.kgi-quote-wrap,
+.kgi-quote-wrap * {
+  box-sizing: border-box;
 }
+
+.kgi-quote-wrap{
+  width: 100% !important;
+  max-width: 1200px;           /* keep your design max width */
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+/* Force the header row to span the full available line */
+.kgi-quote-top{
+  width: 100% !important;
+  display: flex !important;
+}
+
+/* Force the stepper to claim the space */
+.kgi-quote-stepper{
+  width: 100% !important;
+  flex: 1 1 auto !important;
+}
+
+/* Prevent the NEXT button area from stealing width */
+.kgi-quote-top-actions{
+  flex: 0 0 auto !important;
+  white-space: nowrap;
+}
+
+.kgi-quote-wrap{
+  max-width:1200px;
+  margin:0 auto;
+}
+
+/* TOP BAR */
+.kgi-quote-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:18px;
+  width:100%;
+}
+
+/* ✅ STEPPER (THIS WAS THE CORE PROBLEM) */
+.kgi-quote-stepper{
+  display:flex;                 /* REQUIRED */
+  align-items:center;
+  flex:1 1 0;
+  width:100%;
+  min-width:0;
+}
+
+/* Each step gets equal width */
+.kgi-step{
+  flex:1 1 0;
+  min-width:0;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  opacity:.5;
+  cursor:pointer;               /* clickable numbers */
+  padding:6px 4px;
+  white-space:nowrap;
+}
+
+/* stop bold/active causing any layout shift */
+.kgi-step *{
+  box-sizing:border-box;
+}
+
+.kgi-step.is-active,
+.kgi-step.is-done{
+  opacity:1;
+}
+
+.kgi-badge{
+  width:26px;
+  height:26px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:2px solid #002d50;
+  font-weight:700;
+  font-size:13px;
+  flex:0 0 auto;
+}
+
+.kgi-step.is-active .kgi-badge,
+.kgi-step.is-done .kgi-badge{
+  background:#002d50;
+  color:#fff;
+}
+
+.kgi-label{
+  display:inline-block;
+  font-size:13px;
+  line-height:1.1;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
+}
+
+/* Connector line */
+.kgi-line{
+  height:2px;
+  background:#d9d9d9;
+  flex:1 1 0;
+  min-width:18px;
+}
+
+/* Buttons */
+.kgi-cta,
+.kgi-pill{
+  background:#b10063;
+  color:#fff;
+  border:0;
+  border-radius:999px;
+  padding:14px 22px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.kgi-cta {
+  margin-top: 20px !important;
+}
+
+.kgi-pill{ padding:10px 18px; }
+
+.kgi-pill-ghost{
+  background:#fff;
+  color:#b10063;
+  border:2px solid #b10063;
+}
+
+/* Panels */
+.kgi-panel{display:none;}
+.kgi-panel.is-active{display:block;}
+
+/* Cards */
+.kgi-card{
+  background:#fff;
+  border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.1);
+  padding:22px;
+}
+
+/* Items list */
+.kgi-items .kgi-item{
+  display:grid;
+  grid-template-columns:120px 1fr 120px;
+  gap:16px;
+  align-items:center;
+  background:#fff;
+  border-radius:16px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+  padding:14px;
+  margin-bottom:12px;
+}
+
+.kgi-item-img img{
+  width:100%;
+  height:auto;
+  display:block;
+  border-radius:12px;
+}
+
+.kgi-item-title{
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.kgi-item-unit{
+  opacity:.7;
+  margin-bottom:10px;
+}
+
+.kgi-item-controls{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+}
+
+/* ✅ Quantity controls – theme-proof */
+.kgi-qty{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* Force override theme button styling */
+.kgi-qty button{
+  all:unset !important;                    /* nukes theme styles */
+  width:36px !important;
+  height:36px !important;
+  border-radius:999px !important;
+  border:1px solid #ddd !important;
+  background:#fff !important;
+  cursor:pointer !important;
+  font-weight:800 !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  line-height:1 !important;
+  user-select:none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.kgi-qty button:active{
+  transform:scale(.98);
+}
+
+.kgi-qty-input{
+  width:64px;
+  height:36px;
+  text-align:center;
+  border:1px solid #ddd;
+  border-radius:999px;
+  padding:0 10px;
+  box-sizing:border-box;
+  font-weight:700;
+}
+
+/* Remove browser spinners */
+.kgi-qty-input::-webkit-outer-spin-button,
+.kgi-qty-input::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+.kgi-qty-input[type=number]{
+  -moz-appearance:textfield;
+}
+
+/* Remove button/link styling being hijacked */
+.kgi-link{
+  all:unset;
+  color:#333;
+  text-decoration:underline;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.kgi-item-total{
+  text-align:right;
+  font-weight:800;
+}
+
+.kgi-items-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  margin-top:14px;
+  gap:16px;
+}
+
+.kgi-items-subnote{
+  opacity:.75;
+  font-size:14px;
+}
+
+.kgi-note{
+  margin:16px 0;
+  text-align:center;
+  opacity:.8;
+}
+
+/* Transport / Details grids */
+.kgi-transport-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+.kgi-details-grid{
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:20px;
+}
+
+.kgi-card-image{
+  min-height:420px;
+  background:#eee url('') center/cover no-repeat;
+}
+
+/* Form fields */
+.kgi-row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.kgi-field{
+  margin-bottom:12px;
+}
+
+.kgi-card label{
+  display:block;
+  font-size:13px;
+  opacity:.75;
+  margin:10px 0 6px;
+}
+
+.kgi-card input,
+.kgi-card select,
+.kgi-card textarea{
+  width:100%;
+  border:1px solid #ddd;
+  border-radius:999px;
+  padding:12px 14px;
+  outline:none;
+  box-sizing:border-box;
+}
+
+.kgi-card textarea{
+  border-radius:14px;
+}
+
+.kgi-check{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  margin-top:10px;
+}
+
+.kgi-check input{
+  width:18px;
+  height:18px;
+  margin-top:2px;
+}
+
+.kgi-footnote{
+  text-align:center;
+  opacity:.8;
+  margin:18px 0;
+}
+
+.kgi-disclaimer{
+  margin-top:14px;
+  background:#fff7cc;
+  border-radius:14px;
+  padding:14px;
+  line-height:1.35;
+}
+
+.kgi-submitted{
+  text-align:center;
+  padding:30px 10px;
+}
+
+.kgi-error{
+  margin-top:10px;
+  background:#ffe3e3;
+  border-radius:12px;
+  padding:10px;
+}
+
+/* Responsive */
+@media (max-width: 900px){
+  .kgi-transport-grid,
+  .kgi-details-grid{
+    grid-template-columns:1fr;
+  }
+
+  .kgi-items .kgi-item{
+    grid-template-columns:90px 1fr;
+  }
+
+  .kgi-item-total{
+    grid-column:1 / -1;
+    text-align:left;
+  }
+
+  .kgi-line{
+    min-width:10px;
+  }
+
+  .kgi-label{
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+  }
+}
+
+/* ============================
+   Items: move unit + qty beside name
+   ============================ */
+
+.kgi-item-main{
+  display:grid;
+  grid-template-columns: 1fr auto auto; /* name | unit | qty */
+  grid-template-rows: auto auto;        /* top row | controls row */
+  column-gap: 14px;
+  row-gap: 8px;
+  align-items:center;
+}
+
+/* Top row */
+.kgi-item-title{
+  grid-column: 1;
+  grid-row: 1;
+  margin:0;
+}
+
+.kgi-item-unit{
+  grid-column: 1;
+  grid-row: 2;
+  margin:0;
+  opacity:.75;
+  white-space:nowrap;
+}
+
+.kgi-qty{
+  grid-column: 3;
+  grid-row: 1;
+  justify-self:end;
+}
+
+/* Second row: remove button sits under (or you can move it to top right) */
+.kgi-item-controls{
+  grid-column: 2;
+  grid-row: 2;
+  margin:0;
+}
+
+/* Optional: keep remove aligned right on second row */
+.kgi-item-controls{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+}
+.kgi-item-controls .kgi-link{
+  margin-left:auto;
+  text-decoration: none;
+}
+
