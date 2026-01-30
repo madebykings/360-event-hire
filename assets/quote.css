@@ -1,371 +1,319 @@
 /* ============================
-   KGI Quote Checkout – FULL CSS (FIXED)
-   - Stepper is always 100% wide, equal steps, no jumping
-   - Quantity +/- buttons forced to proper style (theme-proof)
+   KGI Quote Checkout – CSS (BLUE/TAN, NO GLOW)
+   Matches plugin markup + screenshot vibe
    ============================ */
 
-/* ==== HARD STRETCH OVERRIDES (Elementor/theme-proof) ==== */
-
-/* Make shortcode wrappers full width (Elementor often uses inline/auto) */
-.kgi-quote-wrap,
-.kgi-quote-wrap * {
-  box-sizing: border-box;
+:root{
+  --kgi-blue: #002d50;
+  --kgi-tan:  #c7a37a;
+  --kgi-tan-dark:#b08b62;
+  --kgi-grey:#f2f2f2;
+  --kgi-border: rgba(0,0,0,.08);
+  --kgi-shadow: 0 10px 30px rgba(0,0,0,.10);
 }
 
-.kgi-quote-wrap{
-  width: 100% !important;
-  max-width: 1200px;           /* keep your design max width */
-  margin: 0 auto !important;
-  display: block !important;
-}
+.kgi-quote, .kgi-quote *{ box-sizing:border-box; }
 
-/* Force the header row to span the full available line */
-.kgi-quote-top{
-  width: 100% !important;
-  display: flex !important;
-}
-
-/* Force the stepper to claim the space */
-.kgi-quote-stepper{
-  width: 100% !important;
-  flex: 1 1 auto !important;
-}
-
-/* Prevent the NEXT button area from stealing width */
-.kgi-quote-top-actions{
-  flex: 0 0 auto !important;
-  white-space: nowrap;
-}
-
-.kgi-quote-wrap{
+.kgi-quote{
+  width:100%;
   max-width:1200px;
   margin:0 auto;
 }
 
-/* TOP BAR */
-.kgi-quote-top{
+/* ---- Stepper (pills, BLUE) ---- */
+.kgi-steps{
+  width:100%;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:16px;
-  margin-bottom:18px;
-  width:100%;
+  gap:14px;
+  margin: 0 0 18px;
 }
 
-/* ✅ STEPPER (THIS WAS THE CORE PROBLEM) */
-.kgi-quote-stepper{
-  display:flex;                 /* REQUIRED */
-  align-items:center;
-  flex:1 1 0;
-  width:100%;
-  min-width:0;
-}
-
-/* Each step gets equal width */
 .kgi-step{
   flex:1 1 0;
   min-width:0;
-  display:flex;
-  flex-direction:row;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  opacity:.5;
-  cursor:pointer;               /* clickable numbers */
-  padding:6px 4px;
+  padding:12px 10px;
+  border-radius:999px;
+  text-align:center;
+  font-weight:800;
+  font-size:13px;
+  opacity:.55;
+  cursor:pointer;
+  user-select:none;
+  border:2px solid rgba(0,45,80,.18);
+  background:#fff;
+  color: var(--kgi-blue);
   white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
-/* stop bold/active causing any layout shift */
-.kgi-step *{
-  box-sizing:border-box;
-}
-
-.kgi-step.is-active,
 .kgi-step.is-done{
   opacity:1;
+  border-color: var(--kgi-blue);
+  background: #fff;
+  color: var(--kgi-blue);
 }
 
-.kgi-badge{
-  width:26px;
-  height:26px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border:2px solid #002d50;
-  font-weight:700;
-  font-size:13px;
-  flex:0 0 auto;
-}
-
-.kgi-step.is-active .kgi-badge,
-.kgi-step.is-done .kgi-badge{
-  background:#002d50;
+.kgi-step.is-active{
+  opacity:1;
+  border-color: var(--kgi-blue);
+  background: var(--kgi-blue);
   color:#fff;
 }
 
-.kgi-label{
-  display:inline-block;
-  font-size:13px;
-  line-height:1.1;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width:100%;
+/* ---- Top action ---- */
+.kgi-actions-top{
+  width:100%;
+  display:flex;
+  justify-content:flex-end;
+  margin: 0 0 14px;
 }
 
-/* Connector line */
-.kgi-line{
-  height:2px;
-  background:#d9d9d9;
-  flex:1 1 0;
-  min-width:18px;
-}
-
-/* Buttons */
-.kgi-cta,
-.kgi-pill{
-  background:#b10063;
+/* ---- Buttons (TAN, NO GLOW, THEME-PROOF) ---- */
+.kgi-btn{
+  all: unset;
+  background: var(--kgi-tan);
   color:#fff;
   border:0;
   border-radius:999px;
   padding:14px 22px;
-  font-weight:700;
+  font-weight:900;
   cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  text-decoration:none;
+  box-shadow:none !important;      /* ✅ remove glow */
+  filter:none !important;          /* ✅ remove theme effects */
 }
 
-.kgi-cta {
-  margin-top: 20px !important;
+.kgi-btn:hover{ background: var(--kgi-tan-dark); }
+.kgi-btn:active{ transform:scale(.99); }
+
+.kgi-btn.kgi-btn-small{
+  padding:12px 18px;
+  font-weight:900;
 }
 
-.kgi-pill{ padding:10px 18px; }
+/* ---- Panels ---- */
+.kgi-panel{ display:none; }
+.kgi-panel.is-active{ display:block; }
 
-.kgi-pill-ghost{
-  background:#fff;
-  color:#b10063;
-  border:2px solid #b10063;
-}
-
-/* Panels */
-.kgi-panel{display:none;}
-.kgi-panel.is-active{display:block;}
-
-/* Cards */
+/* ---- Cards (soft, like screenshot) ---- */
 .kgi-card{
   background:#fff;
+  border:1px solid var(--kgi-border);
   border-radius:18px;
-  box-shadow:0 10px 30px rgba(0,0,0,.1);
-  padding:22px;
+  box-shadow: var(--kgi-shadow);
+  padding:26px 26px;
 }
 
-/* Items list */
-.kgi-items .kgi-item{
+.kgi-card h2, .kgi-card h3{
+  margin:0 0 18px;
+  font-weight:900;
+  color:#111;
+}
+
+/* Transport layout grid */
+.kgi-transport-grid{
   display:grid;
-  grid-template-columns:120px 1fr 120px;
-  gap:16px;
-  align-items:center;
+  grid-template-columns: 1fr 1fr;
+  gap:22px;
+}
+
+/* Details layout grid */
+.kgi-details-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:22px;
+}
+
+.kgi-card-image{
+  min-height:420px;
+  background:#eee url('https://www.360hire.events/wp-content/uploads/2025/01/IMG_3124-scaled.jpg') center/cover no-repeat;
+}
+
+/* ---- Items list card (keep what you like) ---- */
+.kgi-items .kgi-item{
+  width:100%;
+  max-width: 860px;
+  margin:0 auto 16px;
   background:#fff;
-  border-radius:16px;
-  box-shadow:0 8px 20px rgba(0,0,0,.08);
-  padding:14px;
-  margin-bottom:12px;
+  border:1px solid var(--kgi-border);
+  border-radius:18px;
+  box-shadow: var(--kgi-shadow);
+  padding:18px;
+  display:grid;
+  grid-template-columns: 160px 1fr;
+  gap:18px;
+  align-items:center;
 }
 
 .kgi-item-img img{
   width:100%;
   height:auto;
   display:block;
-  border-radius:12px;
+  border-radius:14px;
 }
 
-.kgi-item-title{
-  font-weight:700;
-  margin-bottom:6px;
+.kgi-item-meta{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto auto;
+  gap:10px 18px;
+  align-items:center;
+}
+
+.kgi-item-name{
+  font-weight:900;
+  color:#111;
 }
 
 .kgi-item-unit{
   opacity:.7;
-  margin-bottom:10px;
+  font-weight:700;
 }
 
-.kgi-item-controls{
+.kgi-item-total{
+  grid-column:2;
+  grid-row:1 / span 3;
+  font-weight:900;
+  text-align:right;
+  white-space:nowrap;
+  color:#111;
+}
+
+/* qty row */
+.kgi-item-qty{
+  grid-column:1;
   display:flex;
   align-items:center;
-  gap:14px;
+  gap:12px;
   flex-wrap:wrap;
 }
 
-/* ✅ Quantity controls – theme-proof */
-.kgi-qty{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-}
-
-/* Force override theme button styling */
-.kgi-qty button{
-  all:unset !important;                    /* nukes theme styles */
-  width:36px !important;
-  height:36px !important;
+/* Qty controls (light grey, theme-proof) */
+.kgi-qty-btn{
+  all:unset !important;
+  width:40px !important;
+  height:40px !important;
   border-radius:999px !important;
-  border:1px solid #ddd !important;
-  background:#fff !important;
+  background: var(--kgi-grey) !important;
   cursor:pointer !important;
-  font-weight:800 !important;
+  font-weight:900 !important;
   display:inline-flex !important;
   align-items:center !important;
   justify-content:center !important;
   line-height:1 !important;
-  user-select:none !important;
-  -webkit-tap-highlight-color: transparent !important;
-}
-
-.kgi-qty button:active{
-  transform:scale(.98);
+  color:#111 !important;
 }
 
 .kgi-qty-input{
-  width:64px;
-  height:36px;
+  width:80px !important;
+  height:40px;
   text-align:center;
-  border:1px solid #ddd;
+  border:0 !important;
   border-radius:999px;
-  padding:0 10px;
-  box-sizing:border-box;
-  font-weight:700;
+  background: var(--kgi-grey) !important;
+  padding:0 12px;
+  font-weight:900;
+  outline:none;
 }
 
-/* Remove browser spinners */
+/* Remove spinners */
 .kgi-qty-input::-webkit-outer-spin-button,
-.kgi-qty-input::-webkit-inner-spin-button{
-  -webkit-appearance:none;
-  margin:0;
-}
-.kgi-qty-input[type=number]{
-  -moz-appearance:textfield;
-}
+.kgi-qty-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.kgi-qty-input[type=number]{ -moz-appearance:textfield; }
 
-/* Remove button/link styling being hijacked */
-.kgi-link{
+.kgi-remove-btn{
   all:unset;
-  color:#333;
-  text-decoration:underline;
   cursor:pointer;
-  font-weight:600;
+  color: var(--kgi-blue);
+  text-decoration:underline;
+  font-weight:900;
 }
 
-.kgi-item-total{
-  text-align:right;
-  font-weight:800;
-}
-
-.kgi-items-footer{
+/* Subtotal + notes */
+.kgi-subtotal{
   display:flex;
-  justify-content:space-between;
-  align-items:flex-end;
-  margin-top:14px;
-  gap:16px;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  margin: 10px;
+  font-weight:900;
+  color:#111;
 }
 
-.kgi-items-subnote{
-  opacity:.75;
-  font-size:14px;
+.kgi-subtotal strong {
+  margin-right: 20px;
 }
 
-.kgi-note{
-  margin:16px 0;
+.kgi-hint, .kgi-note, .kgi-next {
   text-align:center;
-  opacity:.8;
+  opacity:.75;
+  margin-top: 10px;
 }
 
-/* Transport / Details grids */
-.kgi-transport-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
+/* ---- Form fields (pill inputs) ---- */
+.kgi-field label{
+  display:block;
+  font-size:12px;
+  opacity:.7;
+  font-weight:800;
+  margin:0 0 8px;
 }
 
-.kgi-details-grid{
-  display:grid;
-  grid-template-columns:1.1fr .9fr;
-  gap:20px;
-}
-
-.kgi-card-image{
-  min-height:420px;
-  background:#eee url('') center/cover no-repeat;
-}
-
-/* Form fields */
 .kgi-row{
   display:flex;
-  gap:10px;
+  gap:12px;
   align-items:center;
 }
 
-.kgi-field{
-  margin-bottom:12px;
-}
-
-.kgi-card label{
-  display:block;
-  font-size:13px;
-  opacity:.75;
-  margin:10px 0 6px;
-}
-
-.kgi-card input,
-.kgi-card select,
-.kgi-card textarea{
+.kgi-row input,
+.kgi-row select,
+.kgi-row textarea{
   width:100%;
-  border:1px solid #ddd;
+  border:1px solid rgba(0,0,0,.08) !important;
   border-radius:999px;
-  padding:12px 14px;
+  background: #fff;
+  padding:14px 16px;
   outline:none;
-  box-sizing:border-box;
 }
 
-.kgi-card textarea{
+.kgi-row textarea{
   border-radius:14px;
+  min-height:110px;
 }
 
-.kgi-check{
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
-  margin-top:10px;
+.kgi-address-results{
+  margin-top: 10px;
 }
 
-.kgi-check input{
-  width:18px;
-  height:18px;
-  margin-top:2px;
+.kgi-address-results select{
+  width:100%;
+  border:1px solid rgba(0,0,0,.08) !important;
+  border-radius:999px;
+  background:#fff;
+  padding:14px 16px;
 }
 
-.kgi-footnote{
-  text-align:center;
-  opacity:.8;
-  margin:18px 0;
-}
-
+/* Disclaimer + Error */
 .kgi-disclaimer{
-  margin-top:14px;
+  margin-top:18px;
   background:#fff7cc;
   border-radius:14px;
   padding:14px;
   line-height:1.35;
 }
 
-.kgi-submitted{
-  text-align:center;
-  padding:30px 10px;
-}
-
 .kgi-error{
-  margin-top:10px;
+  margin-top:14px;
   background:#ffe3e3;
   border-radius:12px;
-  padding:10px;
+  padding:12px 14px;
 }
 
 /* Responsive */
@@ -376,75 +324,17 @@
   }
 
   .kgi-items .kgi-item{
-    grid-template-columns:90px 1fr;
+    grid-template-columns:120px 1fr;
+    max-width:100%;
   }
 
   .kgi-item-total{
     grid-column:1 / -1;
+    grid-row:auto;
     text-align:left;
   }
 
-  .kgi-line{
-    min-width:10px;
-  }
-
-  .kgi-label{
-    white-space:normal;
-    overflow:visible;
-    text-overflow:clip;
+  .kgi-actions-top{
+    justify-content:flex-start;
   }
 }
-
-/* ============================
-   Items: move unit + qty beside name
-   ============================ */
-
-.kgi-item-main{
-  display:grid;
-  grid-template-columns: 1fr auto auto; /* name | unit | qty */
-  grid-template-rows: auto auto;        /* top row | controls row */
-  column-gap: 14px;
-  row-gap: 8px;
-  align-items:center;
-}
-
-/* Top row */
-.kgi-item-title{
-  grid-column: 1;
-  grid-row: 1;
-  margin:0;
-}
-
-.kgi-item-unit{
-  grid-column: 1;
-  grid-row: 2;
-  margin:0;
-  opacity:.75;
-  white-space:nowrap;
-}
-
-.kgi-qty{
-  grid-column: 3;
-  grid-row: 1;
-  justify-self:end;
-}
-
-/* Second row: remove button sits under (or you can move it to top right) */
-.kgi-item-controls{
-  grid-column: 2;
-  grid-row: 2;
-  margin:0;
-}
-
-/* Optional: keep remove aligned right on second row */
-.kgi-item-controls{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:14px;
-}
-.kgi-item-controls .kgi-link{
-  margin-left:auto;
-  text-decoration: none;
-}
-
